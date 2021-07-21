@@ -4,15 +4,36 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["p"]
+            "data": [
+                "p",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 3
+                }
+            ]
         },
         {
             "event": "attribute",
-            "data": ["<", "", "'"]
+            "data": [
+                "<",
+                "",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 9
+                },
+                "'"
+            ]
         },
         {
             "event": "attribute",
-            "data": ["fail", ""]
+            "data": [
+                "fail",
+                "",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 15
+                }
+            ]
         },
         {
             "event": "opentag",
@@ -21,16 +42,32 @@
                 {
                     "<": "",
                     "fail": ""
+                },
+                {
+                    "lineIndex": 1,
+                    "colIndex": 15
                 }
             ]
         },
         {
             "event": "text",
-            "data": ["stuff"]
+            "data": [
+                "stuff",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 21
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["p"]
+            "data": [
+                "p",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 24
+                }
+            ]
         }
     ]
 }

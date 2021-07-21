@@ -112,33 +112,50 @@ function isASCIIAlpha(c: string): boolean {
 
 export interface Callbacks {
     onattribdata(value: string): void;
-    onattribend(quote: string | undefined | null): void;
+    onattribend(quote: string | undefined | null, where: FileLocation): void;
     onattribname(name: string): void;
-    oncdata(data: string): void;
-    onclosetag(name: string): void;
-    oncomment(data: string): void;
-    ondeclaration(content: string): void;
-    onend(): void;
-    onerror(error: Error, state?: State): void;
-    onopentagend(): void;
-    onopentagname(name: string): void;
-    onprocessinginstruction(instruction: string): void;
-    onselfclosingtag(): void;
-    ontext(value: string): void;
-    onerbexpression(value: string): void;
-    onerbscriptlet(value: string): void;
-    onerbbeginblock(beginBlock: ErbBeginBlock): void;
-    onerbendblock(endBlock: ErbEndBlock): void;
+    oncdata(data: string, where: FileLocation): void;
+    onclosetag(name: string, where: FileLocation): void;
+    oncomment(data: string, where: FileLocation): void;
+    ondeclaration(content: string, where: FileLocation): void;
+    onend(where: FileLocation): void;
+    onerror(error: Error, where: FileLocation, state?: State): void;
+    onopentagend(where: FileLocation): void;
+    onopentagname(name: string, where: FileLocation): void;
+    onprocessinginstruction(instruction: string, where: FileLocation): void;
+    onselfclosingtag(where: FileLocation): void;
+    ontext(value: string, where: FileLocation): void;
+    onerbexpression(value: string, where: FileLocation): void;
+    onerbscriptlet(value: string, where: FileLocation): void;
+    onerbbeginblock(beginBlock: ErbBeginBlock, where: FileLocation): void;
+    onerbendblock(endBlock: ErbEndBlock, where: FileLocation): void;
 }
 
-export type ErbBlockKeyword = "if" | "unless" | "else" | "elsif" | "case" | "when" | "while" | "until" | "for" | "begin" | "do";
-export type ErbConditionalBlockData = Required<{ condition: string, }>;
-export type ErbForBlockData = Required<{ variable: string, iterable: string, }>;
-export type ErbDoBlockData = Required<{ func: string, params: string[], }>;
+export type ErbBlockKeyword =
+    | "if"
+    | "unless"
+    | "else"
+    | "elsif"
+    | "case"
+    | "when"
+    | "while"
+    | "until"
+    | "for"
+    | "begin"
+    | "do";
+export type ErbConditionalBlockData = Required<{ condition: string }>;
+export type ErbForBlockData = Required<{ variable: string; iterable: string }>;
+export type ErbDoBlockData = Required<{ func: string; params: string[] }>;
 export type ErbCaseBlockData = Required<{ expression: string }>;
 export type ErbWhenBlockData = Required<{ matches: string[] }>;
 export type ErbEmptyBlockData = null;
-export type ErbBlockData = ErbConditionalBlockData | ErbForBlockData | ErbDoBlockData | ErbCaseBlockData | ErbWhenBlockData | ErbEmptyBlockData;
+export type ErbBlockData =
+    | ErbConditionalBlockData
+    | ErbForBlockData
+    | ErbDoBlockData
+    | ErbCaseBlockData
+    | ErbWhenBlockData
+    | ErbEmptyBlockData;
 
 export class ErbBeginBlock {
     public readonly keyword: ErbBlockKeyword;
@@ -146,9 +163,9 @@ export class ErbBeginBlock {
     constructor(keyword: ErbBlockKeyword, data: ErbBlockData) {
         this.keyword = keyword;
         this.data = data;
-		// TODO: check data is a suitable type given the keyword supplied.
+        // TODO: check data is a suitable type given the keyword supplied.
     }
-};
+}
 
 export class ErbEndBlock {
     public readonly expression: string | undefined;
@@ -156,6 +173,8 @@ export class ErbEndBlock {
         this.expression = expression;
     }
 }
+
+export type FileLocation = Required<{ lineIndex: number; colIndex: number }>;
 
 function ifElseState(upper: string, SUCCESS: State, FAILURE: State) {
     const lower = upper.toLowerCase();
@@ -267,6 +286,10 @@ export default class Tokenizer {
     public sectionStart = 0;
     /** The index within the buffer that we are currently looking at. */
     _index = 0;
+    /** The line index of the character within the buffer that we are currently looking at. */
+    private _lineIndex = 1;
+    /** The column index of the character within the buffer that we are currently looking at. */
+    private _colIndex = 1;
     /**
      * Data that has already been processed will be removed from the buffer occasionally.
      * `_bufferOffset` keeps track of how many characters have been removed, to make sure position information is accurate.
@@ -294,11 +317,20 @@ export default class Tokenizer {
         this.decodeEntities = options?.decodeEntities ?? true;
     }
 
+    public where(): FileLocation {
+        return {
+            lineIndex: this._lineIndex,
+            colIndex: this._colIndex,
+        };
+    }
+
     public reset(): void {
         this._state = State.Text;
         this.buffer = "";
         this.sectionStart = 0;
         this._index = 0;
+        this._colIndex = 1;
+        this._lineIndex = 1;
         this.bufferOffset = 0;
         this.baseState = State.Text;
         this.special = Special.None;
@@ -307,13 +339,15 @@ export default class Tokenizer {
     }
 
     public write(chunk: string): void {
-        if (this.ended) this.cbs.onerror(Error(".write() after done!"));
+        if (this.ended)
+            this.cbs.onerror(Error(".write() after done!"), this.where());
         this.buffer += chunk;
         this.parse();
     }
 
     public end(chunk?: string): void {
-        if (this.ended) this.cbs.onerror(Error(".end() after done!"));
+        if (this.ended)
+            this.cbs.onerror(Error(".end() after done!"), this.where());
         if (chunk) this.write(chunk);
         this.ended = true;
         if (this.running) this.finish();
@@ -343,7 +377,7 @@ export default class Tokenizer {
     private stateText(c: string) {
         if (c === "<") {
             if (this._index > this.sectionStart) {
-                this.cbs.ontext(this.getSection());
+                this.cbs.ontext(this.getSection(), this.where());
             }
             this._state = State.BeforeTagName;
             this.sectionStart = this._index;
@@ -353,7 +387,7 @@ export default class Tokenizer {
             (this.special === Special.None || this.special === Special.Title)
         ) {
             if (this._index > this.sectionStart) {
-                this.cbs.ontext(this.getSection());
+                this.cbs.ontext(this.getSection(), this.where());
             }
             this.baseState = State.Text;
             this._state = State.BeforeEntity;
@@ -376,7 +410,7 @@ export default class Tokenizer {
         if (c === "/") {
             this._state = State.BeforeClosingTagName;
         } else if (c === "<") {
-            this.cbs.ontext(this.getSection());
+            this.cbs.ontext(this.getSection(), this.where());
             this.sectionStart = this._index;
         } else if (c === "%") {
             this._state = State.BeforeErbPercent;
@@ -437,7 +471,6 @@ export default class Tokenizer {
         }
     }
     private getErbBeginBlock(body: string): ErbBeginBlock | null {
-
         let regexpResult;
 
         // Conditional (if)
@@ -448,29 +481,37 @@ export default class Tokenizer {
         }
 
         // Method call block e.g. "list.each do |elem|"" or "render(...) do"
-		regexpResult = /^\s*([^\s]+) do \|(.*)\|\s*$/m.exec(body);
-		if (!regexpResult) regexpResult = /^\s*([^\s]+) do\s*$/m.exec(body);
-		if (regexpResult) {
-			return new ErbBeginBlock("do", {
-				func: regexpResult[1],
-				params: regexpResult[2] ? regexpResult[2].split(",").map(str => str.trim()) : [],
-			});
-		}
+        regexpResult = /^\s*([^\s]+) do \|(.*)\|\s*$/m.exec(body);
+        if (!regexpResult) regexpResult = /^\s*([^\s]+) do\s*$/m.exec(body);
+        if (regexpResult) {
+            return new ErbBeginBlock("do", {
+                func: regexpResult[1],
+                params: regexpResult[2]
+                    ? regexpResult[2].split(",").map((str) => str.trim())
+                    : [],
+            });
+        }
 
         // Conditional (unless)
         regexpResult = /^\s*unless (.*) then\s*$/m.exec(body);
         if (!regexpResult) regexpResult = /^\s*unless (.*)$/m.exec(body);
         if (regexpResult) {
-            return new ErbBeginBlock("unless", { condition: regexpResult[1].trim() });
+            return new ErbBeginBlock("unless", {
+                condition: regexpResult[1].trim(),
+            });
         }
 
         // Loop (for)
         regexpResult = /^\s*for (.*) in (.*) do\s*$/m.exec(body);
-        if (!regexpResult) regexpResult = /^\s*for (.*) in (.*)\s*$/m.exec(body);
+        if (!regexpResult)
+            regexpResult = /^\s*for (.*) in (.*)\s*$/m.exec(body);
         if (regexpResult) {
-            return new ErbBeginBlock("for", { variable: regexpResult[1].trim(), iterable: regexpResult[2].trim() });
+            return new ErbBeginBlock("for", {
+                variable: regexpResult[1].trim(),
+                iterable: regexpResult[2].trim(),
+            });
         }
-        
+
         // Conditional (else)
         regexpResult = /^\s*else\s*$/m.exec(body);
         if (regexpResult) {
@@ -481,14 +522,18 @@ export default class Tokenizer {
         regexpResult = /^\s*elsif (.*) then\s*$/m.exec(body);
         if (!regexpResult) regexpResult = /^\s*elsif (.*)$/m.exec(body);
         if (regexpResult) {
-            return new ErbBeginBlock("elsif", { condition: regexpResult[1].trim() });
+            return new ErbBeginBlock("elsif", {
+                condition: regexpResult[1].trim(),
+            });
         }
 
         // Loop (until)
         regexpResult = /^\s*until (.*) do\s*$/m.exec(body);
         if (!regexpResult) regexpResult = /^\s*until (.*)\s*$/m.exec(body);
         if (regexpResult) {
-            return new ErbBeginBlock("until", { condition: regexpResult[1].trim() });
+            return new ErbBeginBlock("until", {
+                condition: regexpResult[1].trim(),
+            });
         }
 
         // Begin
@@ -500,7 +545,9 @@ export default class Tokenizer {
         // Case [expression]
         regexpResult = /^\s*case (.*)\s*$/m.exec(body);
         if (regexpResult) {
-            return new ErbBeginBlock("case", { expression: regexpResult[1].trim() });
+            return new ErbBeginBlock("case", {
+                expression: regexpResult[1].trim(),
+            });
         }
 
         // Case
@@ -512,38 +559,52 @@ export default class Tokenizer {
         // When
         regexpResult = /^\s*when (.*)\s*$/m.exec(body);
         if (regexpResult) {
-            return new ErbBeginBlock("when", { matches: regexpResult[1].split(",").map(str => str.trim()) });
+            return new ErbBeginBlock("when", {
+                matches: regexpResult[1].split(",").map((str) => str.trim()),
+            });
         }
 
         // Loop (while)
         regexpResult = /^\s*while (.*)\s*$/m.exec(body);
         if (regexpResult) {
-            return new ErbBeginBlock("while", { condition: regexpResult[1].trim() });
+            return new ErbBeginBlock("while", {
+                condition: regexpResult[1].trim(),
+            });
         }
 
         return null;
-
     }
     private getErbEndBlock(body: string): ErbEndBlock | null {
-        let regexpResult = /^\s*end (.*)$/.exec(body);
+        const regexpResult = /^\s*end\s?(.*)$/.exec(body);
         if (!regexpResult) return null;
         return new ErbEndBlock(regexpResult[1]);
     }
-    private stateAfterErbPercentAgnostic(c: string, erbType: "expression" | "scriptlet") {
+    private stateAfterErbPercentAgnostic(
+        c: string,
+        erbType: "expression" | "scriptlet"
+    ) {
         if (c === ">") {
             this._state = State.Text;
-            const body = this.getSection().substring(1, this.getSection().length - 1).trim();
+            const body = this.getSection()
+                .substring(1, this.getSection().length - 1)
+                .trim();
             const beginBlock = this.getErbBeginBlock(body);
-			const endBlock = this.getErbEndBlock(body);
-            if (beginBlock)
-                this.cbs.onerbbeginblock(beginBlock);
-            else if (endBlock)
-                this.cbs.onerbendblock(endBlock);
+            const endBlock = this.getErbEndBlock(body);
+            if (beginBlock) this.cbs.onerbbeginblock(beginBlock, this.where());
+            else if (endBlock) this.cbs.onerbendblock(endBlock, this.where());
             else
-                this.cbs[erbType === "expression" ? "onerbexpression" : "onerbscriptlet"](body);
+                this.cbs[
+                    erbType === "expression"
+                        ? "onerbexpression"
+                        : "onerbscriptlet"
+                ](body, this.where());
+            this.sectionStart = this._index + 1;
         } else {
             // False alarm - re-read as ERB
-            this._state = erbType === "expression" ? State.InErbExpression : State.InErbScriptlet;
+            this._state =
+                erbType === "expression"
+                    ? State.InErbExpression
+                    : State.InErbScriptlet;
             this._index--;
         }
     }
@@ -601,7 +662,7 @@ export default class Tokenizer {
     }
     private stateBeforeAttributeName(c: string) {
         if (c === ">") {
-            this.cbs.onopentagend();
+            this.cbs.onopentagend(this.where());
             this._state = State.Text;
             this.sectionStart = this._index + 1;
         } else if (c === "/") {
@@ -613,7 +674,7 @@ export default class Tokenizer {
     }
     private stateInSelfClosingTag(c: string) {
         if (c === ">") {
-            this.cbs.onselfclosingtag();
+            this.cbs.onselfclosingtag(this.where());
             this._state = State.Text;
             this.sectionStart = this._index + 1;
             this.special = Special.None; // Reset special state, in case of self-closing special tags
@@ -634,11 +695,11 @@ export default class Tokenizer {
         if (c === "=") {
             this._state = State.BeforeAttributeValue;
         } else if (c === "/" || c === ">") {
-            this.cbs.onattribend(undefined);
+            this.cbs.onattribend(undefined, this.where());
             this._state = State.BeforeAttributeName;
             this._index--;
         } else if (!whitespace(c)) {
-            this.cbs.onattribend(undefined);
+            this.cbs.onattribend(undefined, this.where());
             this._state = State.InAttributeName;
             this.sectionStart = this._index;
         }
@@ -659,7 +720,7 @@ export default class Tokenizer {
     private handleInAttributeValue(c: string, quote: string) {
         if (c === quote) {
             this.emitToken("onattribdata");
-            this.cbs.onattribend(quote);
+            this.cbs.onattribend(quote, this.where());
             this._state = State.BeforeAttributeName;
         } else if (this.decodeEntities && c === "&") {
             this.emitToken("onattribdata");
@@ -677,7 +738,7 @@ export default class Tokenizer {
     private stateInAttributeValueNoQuotes(c: string) {
         if (whitespace(c) || c === ">") {
             this.emitToken("onattribdata");
-            this.cbs.onattribend(null);
+            this.cbs.onattribend(null, this.where());
             this._state = State.BeforeAttributeName;
             this._index--;
         } else if (this.decodeEntities && c === "&") {
@@ -697,14 +758,14 @@ export default class Tokenizer {
     }
     private stateInDeclaration(c: string) {
         if (c === ">") {
-            this.cbs.ondeclaration(this.getSection());
+            this.cbs.ondeclaration(this.getSection(), this.where());
             this._state = State.Text;
             this.sectionStart = this._index + 1;
         }
     }
     private stateInProcessingInstruction(c: string) {
         if (c === ">") {
-            this.cbs.onprocessinginstruction(this.getSection());
+            this.cbs.onprocessinginstruction(this.getSection(), this.where());
             this._state = State.Text;
             this.sectionStart = this._index + 1;
         }
@@ -723,7 +784,8 @@ export default class Tokenizer {
     private stateInSpecialComment(c: string) {
         if (c === ">") {
             this.cbs.oncomment(
-                this.buffer.substring(this.sectionStart, this._index)
+                this.buffer.substring(this.sectionStart, this._index),
+                this.where()
             );
             this._state = State.Text;
             this.sectionStart = this._index + 1;
@@ -740,7 +802,8 @@ export default class Tokenizer {
         if (c === ">") {
             // Remove 2 trailing chars
             this.cbs.oncomment(
-                this.buffer.substring(this.sectionStart, this._index - 2)
+                this.buffer.substring(this.sectionStart, this._index - 2),
+                this.where()
             );
             this._state = State.Text;
             this.sectionStart = this._index + 1;
@@ -769,7 +832,8 @@ export default class Tokenizer {
         if (c === ">") {
             // Remove 2 trailing chars
             this.cbs.oncdata(
-                this.buffer.substring(this.sectionStart, this._index - 2)
+                this.buffer.substring(this.sectionStart, this._index - 2),
+                this.where()
             );
             this._state = State.Text;
             this.sectionStart = this._index + 1;
@@ -917,7 +981,10 @@ export default class Tokenizer {
         } else if (this.running) {
             if (this._state === State.Text) {
                 if (this.sectionStart !== this._index) {
-                    this.cbs.ontext(this.buffer.substr(this.sectionStart));
+                    this.cbs.ontext(
+                        this.buffer.substr(this.sectionStart),
+                        this.where()
+                    );
                 }
                 this.buffer = "";
                 this.bufferOffset += this._index;
@@ -945,6 +1012,7 @@ export default class Tokenizer {
     private parse() {
         while (this._index < this.buffer.length && this.running) {
             const c = this.buffer.charAt(this._index);
+            const nextIndex = this._index + 1;
             if (this._state === State.Text) {
                 this.stateText(c);
             } else if (this._state === State.InAttributeValueDq) {
@@ -1089,9 +1157,21 @@ export default class Tokenizer {
             } else if (this._state === State.BeforeNumericEntity) {
                 stateBeforeNumericEntity(this, c);
             } else {
-                this.cbs.onerror(Error("unknown _state"), this._state);
+                this.cbs.onerror(
+                    Error("unknown _state"),
+                    this.where(),
+                    this._state
+                );
             }
             this._index++;
+            if (this._index === nextIndex) {
+                if (c === "\n") {
+                    this._lineIndex++;
+                    this._colIndex = 1;
+                } else {
+                    this._colIndex++;
+                }
+            }
         }
         this.cleanup();
     }
@@ -1101,7 +1181,7 @@ export default class Tokenizer {
         if (this.sectionStart < this._index) {
             this.handleTrailingData();
         }
-        this.cbs.onend();
+        this.cbs.onend(this.where());
     }
 
     private handleTrailingData() {
@@ -1111,13 +1191,13 @@ export default class Tokenizer {
             this._state === State.AfterCdata1 ||
             this._state === State.AfterCdata2
         ) {
-            this.cbs.oncdata(data);
+            this.cbs.oncdata(data, this.where());
         } else if (
             this._state === State.InComment ||
             this._state === State.AfterComment1 ||
             this._state === State.AfterComment2
         ) {
-            this.cbs.oncomment(data);
+            this.cbs.oncomment(data, this.where());
         } else if (this._state === State.InNamedEntity && !this.xmlMode) {
             this.parseLegacyEntity();
             if (this.sectionStart < this._index) {
@@ -1147,7 +1227,7 @@ export default class Tokenizer {
             this._state !== State.InAttributeValueNq &&
             this._state !== State.InClosingTagName
         ) {
-            this.cbs.ontext(data);
+            this.cbs.ontext(data, this.where());
         }
         /*
          * Else, ignore remaining data
@@ -1159,14 +1239,14 @@ export default class Tokenizer {
         return this.buffer.substring(this.sectionStart, this._index);
     }
     private emitToken(name: "onopentagname" | "onclosetag" | "onattribdata") {
-        this.cbs[name](this.getSection());
+        this.cbs[name](this.getSection(), this.where());
         this.sectionStart = -1;
     }
     private emitPartial(value: string) {
         if (this.baseState !== State.Text) {
             this.cbs.onattribdata(value); // TODO implement the new event
         } else {
-            this.cbs.ontext(value);
+            this.cbs.ontext(value, this.where());
         }
     }
 }

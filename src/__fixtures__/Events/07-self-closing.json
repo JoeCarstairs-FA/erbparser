@@ -4,11 +4,25 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["a"]
+            "data": [
+                "a",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 3
+                }
+            ]
         },
         {
             "event": "attribute",
-            "data": ["href", "http://test.com/", null]
+            "data": [
+                "href",
+                "http://test.com/",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 25
+                },
+                null
+            ]
         },
         {
             "event": "opentag",
@@ -16,28 +30,63 @@
                 "a",
                 {
                     "href": "http://test.com/"
+                },
+                {
+                    "lineIndex": 1,
+                    "colIndex": 25
                 }
             ]
         },
         {
             "event": "text",
-            "data": ["Foo"]
+            "data": [
+                "Foo",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 29
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["a"]
+            "data": [
+                "a",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 32
+                }
+            ]
         },
         {
             "event": "opentagname",
-            "data": ["hr"]
+            "data": [
+                "hr",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 36
+                }
+            ]
         },
         {
             "event": "opentag",
-            "data": ["hr", {}]
+            "data": [
+                "hr",
+                {},
+                {
+                    "lineIndex": 1,
+                    "colIndex": 39
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["hr"]
+            "data": [
+                "hr",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 39
+                }
+            ]
         }
     ]
 }

@@ -4,23 +4,54 @@
     "expected": [
         {
             "event": "text",
-            "data": ["<"]
+            "data": [
+                "<",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 2
+                }
+            ]
         },
         {
             "event": "opentagname",
-            "data": ["princess-purpose"]
+            "data": [
+                "princess-purpose",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 19
+                }
+            ]
         },
         {
             "event": "opentag",
-            "data": ["princess-purpose", {}]
+            "data": [
+                "princess-purpose",
+                {},
+                {
+                    "lineIndex": 1,
+                    "colIndex": 19
+                }
+            ]
         },
         {
             "event": "text",
-            "data": [">testing"]
+            "data": [
+                ">testing",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 28
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["princess-purpose"]
+            "data": [
+                "princess-purpose",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 46
+                }
+            ]
         }
     ]
 }

@@ -2,6 +2,7 @@ import { Parser, Handler, ParserOptions } from "../Parser";
 import { CollectingHandler } from "../CollectingHandler";
 import fs from "fs";
 import path from "path";
+import { FileLocation } from "../Tokenizer";
 
 /**
  * Write to the parser twice, once a bytes, once as
@@ -43,7 +44,9 @@ export function getEventCollector(
     cb: (error: Error | null, events?: Event[]) => void
 ): CollectingHandler {
     const handler = new CollectingHandler({
-        onerror: cb,
+        onerror(err: Error) {
+            cb(err, []);
+        },
         onend() {
             cb(null, handler.events.reduce(eventReducer, []));
         },
@@ -63,11 +66,16 @@ function eventReducer(
         events.length &&
         events[events.length - 1].event === "text"
     ) {
-        // Combine text nodes
+        // Combine text nodes, taking the latest file location
         (events[events.length - 1].data[0] as string) += data[0];
+        (events[events.length - 1].data[1] as FileLocation) =
+            (events[events.length - 1].data[1] as FileLocation).lineIndex <
+            (data[1] as FileLocation).lineIndex
+                ? (events[events.length - 1].data[1] as FileLocation)
+                : (data[1] as FileLocation);
     } else {
         // Remove `undefined`s from attribute responses, as they cannot be represented in JSON.
-        if (event === "onattribute" && data[2] === undefined) {
+        if (event === "onattribute" && data[3] === undefined) {
             data.pop();
         }
 
@@ -141,6 +149,10 @@ export function createSuite(
     }
 
     function runTest(file: TestFile) {
-        test(file.name, (done) => getResult(file, getCallback(file, done)));
+        if (file.name) {
+            test(file.name, (done) => getResult(file, getCallback(file, done)));
+        } else {
+            expect(file).toBe("something valid");
+        }
     }
 }

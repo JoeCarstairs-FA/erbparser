@@ -4,23 +4,60 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["button"]
+            "data": [
+                "button",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 8
+                }
+            ]
         },
         {
             "event": "attribute",
-            "data": ["class", "test0", "\""]
+            "data": [
+                "class",
+                "test0",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 21
+                },
+                "\""
+            ]
         },
         {
             "event": "attribute",
-            "data": ["title", "test1", "\""]
+            "data": [
+                "title",
+                "test1",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 34
+                },
+                "\""
+            ]
         },
         {
             "event": "attribute",
-            "data": ["disabled", ""]
+            "data": [
+                "disabled",
+                "",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 45
+                }
+            ]
         },
         {
             "event": "attribute",
-            "data": ["value", "test2", null]
+            "data": [
+                "value",
+                "test2",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 56
+                },
+                null
+            ]
         },
         {
             "event": "opentag",
@@ -31,16 +68,32 @@
                     "title": "test1",
                     "disabled": "",
                     "value": "test2"
+                },
+                {
+                    "lineIndex": 1,
+                    "colIndex": 56
                 }
             ]
         },
         {
             "event": "text",
-            "data": ["adsf"]
+            "data": [
+                "adsf",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 61
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["button"]
+            "data": [
+                "button",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 69
+                }
+            ]
         }
     ]
 }

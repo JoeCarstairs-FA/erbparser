@@ -4,7 +4,13 @@
     "expected": [
         {
             "event": "text",
-            "data": ["M&M"]
+            "data": [
+                "M&M",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 4
+                }
+            ]
         }
     ]
 }

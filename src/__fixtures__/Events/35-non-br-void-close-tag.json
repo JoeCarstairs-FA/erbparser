@@ -7,27 +7,65 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["select"]
+            "data": [
+                "select",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 8
+                }
+            ]
         },
         {
             "event": "opentag",
-            "data": ["select", {}]
+            "data": [
+                "select",
+                {},
+                {
+                    "lineIndex": 1,
+                    "colIndex": 8
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["select"]
+            "data": [
+                "select",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 15
+                }
+            ]
         },
         {
             "event": "opentagname",
-            "data": ["input"]
+            "data": [
+                "input",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 15
+                }
+            ]
         },
         {
             "event": "opentag",
-            "data": ["input", {}]
+            "data": [
+                "input",
+                {},
+                {
+                    "lineIndex": 1,
+                    "colIndex": 15
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["input"]
+            "data": [
+                "input",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 15
+                }
+            ]
         }
     ]
 }

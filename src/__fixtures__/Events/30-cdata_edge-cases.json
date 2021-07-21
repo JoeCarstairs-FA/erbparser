@@ -7,13 +7,60 @@
     "expected": [
         {
             "event": "processinginstruction",
-            "data": ["![cdata", "![CDATA"]
+            "data": [
+                "![cdata",
+                "![CDATA",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 9
+                }
+            ]
         },
-        { "event": "cdatastart", "data": [] },
-        { "event": "text", "data": ["[]]sdaf"] },
-        { "event": "cdataend", "data": [] },
-        { "event": "cdatastart", "data": [] },
-        { "event": "text", "data": ["foo"] },
-        { "event": "cdataend", "data": [] }
+        {
+            "event": "cdatastart",
+            "data": []
+        },
+        {
+            "event": "text",
+            "data": [
+                "[]]sdaf",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 28
+                }
+            ]
+        },
+        {
+            "event": "cdataend",
+            "data": [
+                {
+                    "lineIndex": 1,
+                    "colIndex": 28
+                }
+            ]
+        },
+        {
+            "event": "cdatastart",
+            "data": []
+        },
+        {
+            "event": "text",
+            "data": [
+                "foo",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 41
+                }
+            ]
+        },
+        {
+            "event": "cdataend",
+            "data": [
+                {
+                    "lineIndex": 1,
+                    "colIndex": 41
+                }
+            ]
+        }
     ]
 }

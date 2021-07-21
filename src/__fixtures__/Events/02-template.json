@@ -4,19 +4,46 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["p"]
+            "data": [
+                "p",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 3
+                }
+            ]
         },
         {
             "event": "opentag",
-            "data": ["p", {}]
+            "data": [
+                "p",
+                {},
+                {
+                    "lineIndex": 1,
+                    "colIndex": 3
+                }
+            ]
         },
         {
             "event": "opentagname",
-            "data": ["script"]
+            "data": [
+                "script",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 11
+                }
+            ]
         },
         {
             "event": "attribute",
-            "data": ["type", "text/template", "\""]
+            "data": [
+                "type",
+                "text/template",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 31
+                },
+                "\""
+            ]
         },
         {
             "event": "opentag",
@@ -24,20 +51,42 @@
                 "script",
                 {
                     "type": "text/template"
+                },
+                {
+                    "lineIndex": 1,
+                    "colIndex": 32
                 }
             ]
         },
         {
             "event": "text",
-            "data": ["<h1>Heading1</h1>"]
+            "data": [
+                "<h1>Heading1</h1>",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 50
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["script"]
+            "data": [
+                "script",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 58
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["p"]
+            "data": [
+                "p",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 62
+                }
+            ]
         }
     ]
 }

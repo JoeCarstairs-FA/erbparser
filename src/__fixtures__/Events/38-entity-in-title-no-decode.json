@@ -9,19 +9,44 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["title"]
+            "data": [
+                "title",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 7
+                }
+            ]
         },
         {
             "event": "opentag",
-            "data": ["title", {}]
+            "data": [
+                "title",
+                {},
+                {
+                    "lineIndex": 1,
+                    "colIndex": 7
+                }
+            ]
         },
         {
             "event": "text",
-            "data": ["the &quot;title&quot;"]
+            "data": [
+                "the &quot;title&quot;",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 29
+                }
+            ]
         },
         {
             "event": "closetag",
-            "data": ["title"]
+            "data": [
+                "title",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 29
+                }
+            ]
         }
     ]
 }

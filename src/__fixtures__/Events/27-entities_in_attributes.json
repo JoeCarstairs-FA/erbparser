@@ -4,23 +4,61 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["foo"]
+            "data": [
+                "foo",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 5
+                }
+            ]
         },
         {
             "event": "attribute",
-            "data": ["bar", "&", null]
+            "data": [
+                "bar",
+                "&",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 15
+                },
+                null
+            ]
         },
         {
             "event": "attribute",
-            "data": ["baz", "&", "\""]
+            "data": [
+                "baz",
+                "&",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 26
+                },
+                "\""
+            ]
         },
         {
             "event": "attribute",
-            "data": ["boo", "&", "'"]
+            "data": [
+                "boo",
+                "&",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 38
+                },
+                "'"
+            ]
         },
         {
             "event": "attribute",
-            "data": ["noo", "", null]
+            "data": [
+                "noo",
+                "",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 44
+                },
+                null
+            ]
         },
         {
             "event": "opentag",
@@ -31,12 +69,22 @@
                     "baz": "&",
                     "boo": "&",
                     "noo": ""
+                },
+                {
+                    "lineIndex": 1,
+                    "colIndex": 44
                 }
             ]
         },
         {
             "event": "closetag",
-            "data": ["foo"]
+            "data": [
+                "foo",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 45
+                }
+            ]
         }
     ]
 }

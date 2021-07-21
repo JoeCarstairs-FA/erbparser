@@ -4,11 +4,24 @@
     "expected": [
         {
             "event": "opentagname",
-            "data": ["foo"]
+            "data": [
+                "foo",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 5
+                }
+            ]
         },
         {
             "event": "attribute",
-            "data": ["bar", ""]
+            "data": [
+                "bar",
+                "",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 10
+                }
+            ]
         },
         {
             "event": "opentag",
@@ -16,12 +29,22 @@
                 "foo",
                 {
                     "bar": ""
+                },
+                {
+                    "lineIndex": 1,
+                    "colIndex": 10
                 }
             ]
         },
         {
             "event": "closetag",
-            "data": ["foo"]
+            "data": [
+                "foo",
+                {
+                    "lineIndex": 1,
+                    "colIndex": 16
+                }
+            ]
         }
     ]
 }
