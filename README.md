@@ -140,26 +140,13 @@ const parser = new htmlparser2.Parser({
          *
          */
         console.log(`Expression: '${data}'.`);
-    },
-    onerbbeginblock(beginBlock) {
-        /**
-         * This fires at the start of a "block" of code,
-         * such as a for loop or a conditional. Beware -
-         * this is *not* "block" in the specific sense it
-         * has in Ruby syntax, which would only refer
-         * to do...end blocks. My sense is more general.
-         */
-        console.log(`Block keyword: '${beginBlock.keyword}'.`);
-    },
-    onerbendblock(endBlock) {
-        /**
-         * This fires at the end of a "block" (see above).
-         */
-        console.log(`End block.`);
-    },
+    }
 });
 parser.write(
-    `<% arr.each do |elem| %>\n``   <% @var = elem + 1 %>\n``   <%= @var %>\n``<% end %>`
+    `<% arr.each do |elem| %>
+        <% @var = elem + 1 %>
+        <%= @var %>
+    <% end %>`
 );
 parser.end();
 ```
@@ -167,10 +154,10 @@ parser.end();
 Output:
 
 ```
-Block keyword: 'do'.
+Scriptlet: 'arr.each do |elem|'.
 Scriptlet: '@var = elem + 1'.
 Expression: 'var'.
-End block.
+Scriptlet: 'end'.
 ```
 
 ## Performance
