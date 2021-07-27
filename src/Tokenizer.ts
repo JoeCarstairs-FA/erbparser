@@ -127,8 +127,6 @@ export interface Callbacks {
     ontext(value: string, where: FileLocation): void;
     onerbexpression(value: string, where: FileLocation): void;
     onerbscriptlet(value: string, where: FileLocation): void;
-    onerbbeginblock(beginBlock: ErbBeginBlock, where: FileLocation): void;
-    onerbendblock(endBlock: ErbEndBlock, where: FileLocation): void;
 }
 
 export type ErbBlockKeyword =
@@ -470,115 +468,6 @@ export default class Tokenizer {
             this._state = State.AfterErbScriptletPercent;
         }
     }
-    private getErbBeginBlock(body: string): ErbBeginBlock | null {
-        let regexpResult;
-
-        // Conditional (if)
-        regexpResult = /^\s*if (.*) then\s*$/m.exec(body);
-        if (!regexpResult) regexpResult = /^\s*if (.*)$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("if", { condition: regexpResult[1] });
-        }
-
-        // Method call block e.g. "list.each do |elem|"" or "render(...) do"
-        regexpResult = /^\s*([^\s]+) do \|(.*)\|\s*$/m.exec(body);
-        if (!regexpResult) regexpResult = /^\s*([^\s]+) do\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("do", {
-                func: regexpResult[1],
-                params: regexpResult[2]
-                    ? regexpResult[2].split(",").map((str) => str.trim())
-                    : [],
-            });
-        }
-
-        // Conditional (unless)
-        regexpResult = /^\s*unless (.*) then\s*$/m.exec(body);
-        if (!regexpResult) regexpResult = /^\s*unless (.*)$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("unless", {
-                condition: regexpResult[1].trim(),
-            });
-        }
-
-        // Loop (for)
-        regexpResult = /^\s*for (.*) in (.*) do\s*$/m.exec(body);
-        if (!regexpResult)
-            regexpResult = /^\s*for (.*) in (.*)\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("for", {
-                variable: regexpResult[1].trim(),
-                iterable: regexpResult[2].trim(),
-            });
-        }
-
-        // Conditional (else)
-        regexpResult = /^\s*else\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("else", null);
-        }
-
-        // Conditional (elsif)
-        regexpResult = /^\s*elsif (.*) then\s*$/m.exec(body);
-        if (!regexpResult) regexpResult = /^\s*elsif (.*)$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("elsif", {
-                condition: regexpResult[1].trim(),
-            });
-        }
-
-        // Loop (until)
-        regexpResult = /^\s*until (.*) do\s*$/m.exec(body);
-        if (!regexpResult) regexpResult = /^\s*until (.*)\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("until", {
-                condition: regexpResult[1].trim(),
-            });
-        }
-
-        // Begin
-        regexpResult = /^\s*begin\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("begin", null);
-        }
-
-        // Case [expression]
-        regexpResult = /^\s*case (.*)\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("case", {
-                expression: regexpResult[1].trim(),
-            });
-        }
-
-        // Case
-        regexpResult = /^\s*case\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("case", null);
-        }
-
-        // When
-        regexpResult = /^\s*when (.*)\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("when", {
-                matches: regexpResult[1].split(",").map((str) => str.trim()),
-            });
-        }
-
-        // Loop (while)
-        regexpResult = /^\s*while (.*)\s*$/m.exec(body);
-        if (regexpResult) {
-            return new ErbBeginBlock("while", {
-                condition: regexpResult[1].trim(),
-            });
-        }
-
-        return null;
-    }
-    private getErbEndBlock(body: string): ErbEndBlock | null {
-        const regexpResult = /^\s*end\s?(.*)$/.exec(body);
-        if (!regexpResult) return null;
-        return new ErbEndBlock(regexpResult[1]);
-    }
     private stateAfterErbPercentAgnostic(
         c: string,
         erbType: "expression" | "scriptlet"
@@ -588,16 +477,11 @@ export default class Tokenizer {
             const body = this.getSection()
                 .substring(1, this.getSection().length - 1)
                 .trim();
-            const beginBlock = this.getErbBeginBlock(body);
-            const endBlock = this.getErbEndBlock(body);
-            if (beginBlock) this.cbs.onerbbeginblock(beginBlock, this.where());
-            else if (endBlock) this.cbs.onerbendblock(endBlock, this.where());
-            else
-                this.cbs[
-                    erbType === "expression"
-                        ? "onerbexpression"
-                        : "onerbscriptlet"
-                ](body, this.where());
+            this.cbs[
+                erbType === "expression"
+                    ? "onerbexpression"
+                    : "onerbscriptlet"
+            ](body, this.where());
             this.sectionStart = this._index + 1;
         } else {
             // False alarm - re-read as ERB

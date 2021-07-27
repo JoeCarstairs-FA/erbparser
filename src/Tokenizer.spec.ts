@@ -52,12 +52,6 @@ class CallbackLogger {
     onerbscriptlet(value: string) {
         this.log.push(`onerbscriptlet: '${value}'`);
     }
-    onerbbeginblock(beginBlock: ErbBeginBlock) {
-        this.log.push(`onerbbeginblock: '${beginBlock}'`);
-    }
-    onerbendblock(endBlock: ErbEndBlock) {
-        this.log.push(`onerbendblock: '${endBlock}'`);
-    }
 }
 
 describe("Tokenizer", () => {

@@ -64,12 +64,6 @@ export default class MultiplexHandler implements Handler {
     onerbscriptlet(data: string, where: FileLocation): void {
         this.func("onerbscriptlet", data, where);
     }
-    onerbbeginblock(beginBlock: ErbBeginBlock, where: FileLocation): void {
-        this.func("onerbbeginblock", beginBlock, where);
-    }
-    onerbendblock(endBlock: ErbEndBlock, where: FileLocation): void {
-        this.func("onerbendblock", endBlock, where);
-    }
     onerror(error: Error, where: FileLocation): void {
         this.func("onerror", error, where);
     }

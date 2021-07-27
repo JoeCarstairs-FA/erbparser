@@ -200,8 +200,6 @@ export interface Handler {
     ): void;
     onerbexpression(data: string, where: FileLocation): void;
     onerbscriptlet(data: string, where: FileLocation): void;
-    onerbbeginblock(beginBlock: ErbBeginBlock, where: FileLocation): void;
-    onerbendblock(endBlock: ErbEndBlock, where: FileLocation): void;
 }
 
 const reNameEnd = /\s|\//;
@@ -446,14 +444,6 @@ export class Parser {
 
     onerbscriptlet(data: string, where: FileLocation): void {
         this.cbs.onerbscriptlet?.(data, where);
-    }
-
-    onerbbeginblock(beginBlock: ErbBeginBlock, where: FileLocation): void {
-        this.cbs.onerbbeginblock?.(beginBlock, where);
-    }
-
-    onerbendblock(endBlock: ErbEndBlock, where: FileLocation): void {
-        this.cbs.onerbendblock?.(endBlock, where);
     }
 
     /**
