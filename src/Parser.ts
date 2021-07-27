@@ -1,8 +1,4 @@
-import Tokenizer, {
-    FileLocation,
-    ErbBeginBlock,
-    ErbEndBlock,
-} from "./Tokenizer";
+import Tokenizer, { FileLocation } from "./Tokenizer";
 
 const formTags = new Set([
     "input",

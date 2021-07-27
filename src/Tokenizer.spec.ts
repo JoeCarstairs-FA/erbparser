@@ -1,5 +1,4 @@
 import { Tokenizer } from ".";
-import { ErbBeginBlock, ErbEndBlock } from "./Tokenizer";
 
 class CallbackLogger {
     log: string[] = [];

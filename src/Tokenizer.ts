@@ -129,49 +129,6 @@ export interface Callbacks {
     onerbscriptlet(value: string, where: FileLocation): void;
 }
 
-export type ErbBlockKeyword =
-    | "if"
-    | "unless"
-    | "else"
-    | "elsif"
-    | "case"
-    | "when"
-    | "while"
-    | "until"
-    | "for"
-    | "begin"
-    | "do";
-export type ErbConditionalBlockData = Required<{ condition: string }>;
-export type ErbForBlockData = Required<{ variable: string; iterable: string }>;
-export type ErbDoBlockData = Required<{ func: string; params: string[] }>;
-export type ErbCaseBlockData = Required<{ expression: string }>;
-export type ErbWhenBlockData = Required<{ matches: string[] }>;
-export type ErbEmptyBlockData = null;
-export type ErbBlockData =
-    | ErbConditionalBlockData
-    | ErbForBlockData
-    | ErbDoBlockData
-    | ErbCaseBlockData
-    | ErbWhenBlockData
-    | ErbEmptyBlockData;
-
-export class ErbBeginBlock {
-    public readonly keyword: ErbBlockKeyword;
-    public readonly data: ErbBlockData;
-    constructor(keyword: ErbBlockKeyword, data: ErbBlockData) {
-        this.keyword = keyword;
-        this.data = data;
-        // TODO: check data is a suitable type given the keyword supplied.
-    }
-}
-
-export class ErbEndBlock {
-    public readonly expression: string | undefined;
-    constructor(expression?: string) {
-        this.expression = expression;
-    }
-}
-
 export type FileLocation = Required<{ lineIndex: number; colIndex: number }>;
 
 function ifElseState(upper: string, SUCCESS: State, FAILURE: State) {

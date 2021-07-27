@@ -1,5 +1,5 @@
 import type { Parser, Handler } from "./Parser";
-import { ErbBeginBlock, ErbEndBlock, FileLocation } from "./Tokenizer";
+import { FileLocation } from "./Tokenizer";
 
 /**
  * Calls a specific handler function for all events that are encountered.
