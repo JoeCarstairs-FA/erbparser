@@ -1,5 +1,0 @@
-{
-    "name": "ERB Begin",
-    "html": "<% begin %><% do_something %><% end %>",
-    "useSnapshot": true
-}

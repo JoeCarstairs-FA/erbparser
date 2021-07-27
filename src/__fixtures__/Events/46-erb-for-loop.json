@@ -1,5 +1,0 @@
-{
-    "name": "ERB For Loop",
-    "html": "<% for elem in myList do %><%= elem %><% end %>",
-    "useSnapshot": true
-}
